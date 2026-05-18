@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Loader2 } from "lucide-react";
+import { X, Upload, Loader2, Camera } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/components/Toast";
 import Image from "next/image";
@@ -27,6 +27,7 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
   const [relativeName, setRelativeName] = useState<string>("");
   const [isDeceased, setIsDeceased] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     first_name: "", last_name: "Trehan", relation_title: "", gender: "male",
@@ -193,11 +194,16 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
               )}
               <div className="overflow-y-auto p-6 flex-1">
                 <form id="add-member-form" onSubmit={handleSubmit} className="space-y-4">
-                  <div className="flex justify-center mb-4">
+                  <div className="flex flex-col items-center mb-4 gap-3">
                     <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
+                    <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleImageSelect} />
                     <div onClick={() => fileInputRef.current?.click()}
                       className="w-24 h-24 rounded-full bg-muted border-2 border-dashed border-primary/50 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors overflow-hidden relative group">
                       {photoPreview ? (<><Image src={photoPreview} alt="Preview" fill className="object-cover" /><div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center"><Upload className="w-6 h-6 text-white" /></div></>) : (<><Upload className="w-6 h-6 text-primary mb-1" /><span className="text-[10px] text-muted-foreground uppercase font-medium">Add Photo</span></>)}
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Upload className="w-3.5 h-3.5 text-primary" /> Upload File</button>
+                      <button type="button" onClick={() => cameraInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Camera className="w-3.5 h-3.5 text-primary" /> Take Photo</button>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
