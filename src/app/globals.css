@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FDF8F5;
+  --foreground: #2A3B32;
+  --card: #FAFAFA;
+  --card-foreground: #2A3B32;
+  --popover: #FAFAFA;
+  --popover-foreground: #2A3B32;
+  --primary: #9CB4A6;
+  --primary-foreground: #ffffff;
+  --secondary: #FFDAB9;
+  --secondary-foreground: #3b2f2f;
+  --accent: #C3B1E1;
+  --accent-foreground: #2d263b;
+  --muted: #E8EDE9;
+  --muted-foreground: #5A6D61;
+  --border: #DCDCDD;
+  --input: #DCDCDD;
+  --ring: #9CB4A6;
+  --radius: 1rem;
+  --danger: #e74c3c;
+  --danger-foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+html.high-contrast {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --muted: #e5e5e5;
+  --muted-foreground: #1a1a1a;
+  --border: #000000;
+}
+
+html.text-size-large { font-size: 110%; }
+html.text-size-xlarge { font-size: 125%; }
