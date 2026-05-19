@@ -7,6 +7,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/components/Toast";
 import Image from "next/image";
 import type { FamilyMember, MemberNodeData } from "@/types";
+import { CameraCapture } from "./CameraCapture";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
   const [existingMembers, setExistingMembers] = useState<FamilyMember[]>([]);
   const [relativeName, setRelativeName] = useState<string>("");
   const [isDeceased, setIsDeceased] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   
@@ -81,10 +83,15 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (photoPreview && photoPreview.startsWith("blob:")) URL.revokeObjectURL(photoPreview);
-      setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file));
+      handleFile(e.target.files[0]);
     }
+  };
+
+  const handleFile = (file: File) => {
+    if (photoPreview && photoPreview.startsWith("blob:")) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setIsCameraOpen(false);
   };
 
   const uploadPhoto = async (): Promise<string | null> => {
@@ -195,16 +202,23 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
               <div className="overflow-y-auto p-6 flex-1">
                 <form id="add-member-form" onSubmit={handleSubmit} className="space-y-4">
                   <div className="flex flex-col items-center mb-4 gap-3">
-                    <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
-                    <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleImageSelect} />
-                    <div onClick={() => fileInputRef.current?.click()}
-                      className="w-24 h-24 rounded-full bg-muted border-2 border-dashed border-primary/50 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors overflow-hidden relative group">
-                      {photoPreview ? (<><Image src={photoPreview} alt="Preview" fill className="object-cover" /><div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center"><Upload className="w-6 h-6 text-white" /></div></>) : (<><Upload className="w-6 h-6 text-primary mb-1" /><span className="text-[10px] text-muted-foreground uppercase font-medium">Add Photo</span></>)}
-                    </div>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Upload className="w-3.5 h-3.5 text-primary" /> Upload File</button>
-                      <button type="button" onClick={() => cameraInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Camera className="w-3.5 h-3.5 text-primary" /> Take Photo</button>
-                    </div>
+                    {isCameraOpen ? (
+                      <div className="w-full max-w-sm h-64 md:h-80 mb-2">
+                        <CameraCapture onCapture={handleFile} onCancel={() => setIsCameraOpen(false)} />
+                      </div>
+                    ) : (
+                      <>
+                        <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
+                        <div onClick={() => fileInputRef.current?.click()}
+                          className="w-24 h-24 rounded-full bg-muted border-2 border-dashed border-primary/50 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors overflow-hidden relative group">
+                          {photoPreview ? (<><Image src={photoPreview} alt="Preview" fill className="object-cover" /><div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center"><Upload className="w-6 h-6 text-white" /></div></>) : (<><Upload className="w-6 h-6 text-primary mb-1" /><span className="text-[10px] text-muted-foreground uppercase font-medium">Add Photo</span></>)}
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Upload className="w-3.5 h-3.5 text-primary" /> Upload File</button>
+                          <button type="button" onClick={() => setIsCameraOpen(true)} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Camera className="w-3.5 h-3.5 text-primary" /> Take Photo</button>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1"><label className="text-sm font-medium text-foreground">First Name</label><input required type="text" value={formData.first_name} onChange={(e) => setFormData({...formData, first_name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Ramesh" /></div>

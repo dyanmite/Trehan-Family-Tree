@@ -7,6 +7,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useToast } from "@/components/Toast";
 import Image from "next/image";
 import type { Memory } from "@/types";
+import { CameraCapture } from "./CameraCapture";
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export function AddMemoryModal({ isOpen, onClose, onSuccess, editMemoryData }: A
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [mediaType, setMediaType] = useState<"image" | "story">("image");
   const [formData, setFormData] = useState({ title: "", description: "", date: new Date().toISOString().split('T')[0] });
 
@@ -49,10 +50,16 @@ export function AddMemoryModal({ isOpen, onClose, onSuccess, editMemoryData }: A
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (photoPreview && photoPreview.startsWith("blob:")) URL.revokeObjectURL(photoPreview);
-      setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); setMediaType("image");
+      handleFile(e.target.files[0]);
     }
+  };
+
+  const handleFile = (file: File) => {
+    if (photoPreview && photoPreview.startsWith("blob:")) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setMediaType("image");
+    setIsCameraOpen(false);
   };
 
   const uploadPhoto = async (): Promise<string | null> => {
@@ -110,15 +117,22 @@ export function AddMemoryModal({ isOpen, onClose, onSuccess, editMemoryData }: A
               <form id="add-memory-form" onSubmit={handleSubmit} className="space-y-4">
                 {mediaType === "image" && (
                   <div className="flex flex-col items-center mb-6 gap-3">
-                    <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
-                    <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleImageSelect} />
-                    <div onClick={() => fileInputRef.current?.click()} className="w-full h-48 rounded-2xl bg-muted border-2 border-dashed border-primary/50 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors overflow-hidden relative group">
-                      {photoPreview ? (<><Image src={photoPreview} alt="Preview" fill className="object-cover" /><div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center"><Upload className="w-8 h-8 text-white" /></div></>) : (<><Upload className="w-8 h-8 text-primary mb-2" /><span className="text-sm text-muted-foreground font-medium">Click to upload a photo</span></>)}
-                    </div>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Upload className="w-3.5 h-3.5 text-primary" /> Upload File</button>
-                      <button type="button" onClick={() => cameraInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Camera className="w-3.5 h-3.5 text-primary" /> Take Photo</button>
-                    </div>
+                    {isCameraOpen ? (
+                      <div className="w-full h-64 md:h-80 mb-2">
+                        <CameraCapture onCapture={handleFile} onCancel={() => setIsCameraOpen(false)} />
+                      </div>
+                    ) : (
+                      <>
+                        <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageSelect} />
+                        <div onClick={() => fileInputRef.current?.click()} className="w-full h-48 rounded-2xl bg-muted border-2 border-dashed border-primary/50 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors overflow-hidden relative group">
+                          {photoPreview ? (<><Image src={photoPreview} alt="Preview" fill className="object-cover" /><div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center"><Upload className="w-8 h-8 text-white" /></div></>) : (<><Upload className="w-8 h-8 text-primary mb-2" /><span className="text-sm text-muted-foreground font-medium">Click to upload a photo</span></>)}
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Upload className="w-3.5 h-3.5 text-primary" /> Upload File</button>
+                          <button type="button" onClick={() => setIsCameraOpen(true)} className="text-xs bg-muted hover:bg-border text-foreground px-4 py-2 rounded-full transition-colors border border-border shadow-sm flex items-center gap-1.5"><Camera className="w-3.5 h-3.5 text-primary" /> Take Photo</button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="space-y-1"><label className="text-sm font-medium text-foreground">Memory Title</label><input required type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder={mediaType === 'image' ? "e.g. Diwali 2015" : "e.g. How Grandma and Grandpa met"} /></div>
