@@ -226,21 +226,15 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-foreground">Relation Title</label>
-                      <input type="text" value={formData.relation_title} onChange={(e) => setFormData({...formData, relation_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Dada, Mamu, Son" list="relation-suggestions" />
-                      <datalist id="relation-suggestions">
-                        <option value="Dada (Paternal Grandfather)" /><option value="Dadi (Paternal Grandmother)" />
-                        <option value="Nana (Maternal Grandfather)" /><option value="Nani (Maternal Grandmother)" />
-                        <option value="Papa (Father)" /><option value="Mummy (Mother)" />
-                        <option value="Tauji (Father's Elder Brother)" /><option value="Taiji (Tauji's Wife)" />
-                        <option value="Chacha (Father's Younger Brother)" /><option value="Chachi (Chacha's Wife)" />
-                        <option value="Mama (Maternal Uncle)" /><option value="Mami (Mama's Wife)" />
-                        <option value="Bua (Paternal Aunt)" /><option value="Fufaji (Bua's Husband)" />
-                        <option value="Maasi (Maternal Aunt)" /><option value="Mausa (Maasi's Husband)" />
-                        <option value="Bhai (Brother)" /><option value="Behen (Sister)" />
-                        <option value="Beta (Son)" /><option value="Beti (Daughter)" />
-                        <option value="Bhabhi (Brother's Wife)" /><option value="Jijaji (Sister's Husband)" />
-                        <option value="Husband" /><option value="Wife" />
+                      <label className="text-sm font-medium text-foreground">Family Role / Description (Optional)</label>
+                      <input type="text" value={formData.relation_title} onChange={(e) => setFormData({...formData, relation_title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Family Patriarch, Doctor, Eldest Son" list="role-suggestions" />
+                      <datalist id="role-suggestions">
+                        <option value="Family Patriarch" />
+                        <option value="Family Matriarch" />
+                        <option value="First Generation" />
+                        <option value="Second Generation" />
+                        <option value="Eldest Son" />
+                        <option value="Youngest Daughter" />
                       </datalist>
                     </div>
                     <div className="space-y-1"><label className="text-sm font-medium text-foreground">Gender</label><select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select></div>
