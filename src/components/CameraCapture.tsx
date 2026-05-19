@@ -19,19 +19,31 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
     }
     setError(null);
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-      });
+      let newStream;
+      try {
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode },
+        });
+      } catch (err: any) {
+        // Fallback for devices that don't support specific facingMode
+        if (err.name === "OverconstrainedError" || err.name === "NotFoundError") {
+          newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        } else {
+          throw err;
+        }
+      }
       setStream(newStream);
       if (videoRef.current) {
         videoRef.current.srcObject = newStream;
       }
     } catch (err: any) {
       console.error("Error accessing camera:", err);
-      if (err.name === "NotAllowedError" || err.name === "NotFoundError") {
-        setError("Camera access denied or no camera found. Please check your permissions.");
+      if (err.name === "NotAllowedError") {
+        setError("Camera access denied. Please allow camera permissions in your browser settings.");
+      } else if (err.name === "NotFoundError") {
+        setError("No camera found on this device.");
       } else {
-        setError("Failed to access camera. Try uploading a file instead.");
+        setError("Failed to access camera. Please try opening this link in Safari or Chrome, not inside another app.");
       }
     }
   }, [facingMode]);
