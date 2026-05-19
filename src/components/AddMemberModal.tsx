@@ -121,9 +121,9 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
         marriage_date: formData.marriage_date || null, city: formData.city || null, bio: formData.bio || null,
       };
       if (photo_url) payload.photo_url = photo_url;
-      if (formData.father_id) payload.father_id = formData.father_id;
-      if (formData.mother_id) payload.mother_id = formData.mother_id;
-      if (formData.spouse_id) payload.spouse_id = formData.spouse_id;
+      payload.father_id = formData.father_id || null;
+      payload.mother_id = formData.mother_id || null;
+      payload.spouse_id = formData.spouse_id || null;
       if (formData.sibling_id) {
         const sibling = existingMembers.find(m => m.id === formData.sibling_id);
         if (sibling) {
@@ -257,7 +257,7 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
                     {isDeceased && (<div className="space-y-1"><label className="text-sm font-medium text-muted-foreground">Date of Death</label><input type="date" value={formData.death_date} onChange={(e) => setFormData({...formData, death_date: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" /></div>)}
                   </div>
                   <div className="space-y-1"><label className="text-sm font-medium text-foreground">City (Optional)</label><input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. New Delhi" /></div>
-                  {!relativeToId && !editMemberData && existingMembers.length > 0 && (
+                  {!relativeToId && existingMembers.length > 0 && (
                     <div className="border border-border rounded-xl p-4 space-y-3 bg-background">
                       <h4 className="text-sm font-semibold text-foreground">Link to Existing Members</h4>
                       <div className="grid grid-cols-1 gap-3">
