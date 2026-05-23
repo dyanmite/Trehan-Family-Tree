@@ -124,7 +124,7 @@ export function getRelation(self: FamilyMember, target: FamilyMember, all: Famil
   }
 
   // Cousins
-  const checkCousins = (parent: FamilyMember | undefined) => {
+  const checkFirstCousins = (parent: FamilyMember | undefined) => {
     if (!parent) return null;
     for (const sib of getSiblings(parent, all)) {
       const kids = getChildren(sib.id, all);
@@ -138,8 +138,63 @@ export function getRelation(self: FamilyMember, target: FamilyMember, all: Famil
     }
     return null;
   };
-  const cousinResult = checkCousins(father) || checkCousins(mother);
-  if (cousinResult) return cousinResult;
+  const firstCousinResult = checkFirstCousins(father) || checkFirstCousins(mother);
+  if (firstCousinResult) return firstCousinResult;
+
+  // Second Cousins & Parent's Cousins
+  const getParentFirstCousins = (parent: FamilyMember | undefined): FamilyMember[] => {
+    if (!parent) return [];
+    const cousins: FamilyMember[] = [];
+    const pf = getMember(parent.father_id, all);
+    const pm = getMember(parent.mother_id, all);
+    for (const p of [pf, pm].filter(Boolean) as FamilyMember[]) {
+      for (const sib of getSiblings(p, all)) {
+        for (const kid of getChildren(sib.id, all)) {
+          if (!cousins.find(c => c.id === kid.id)) cousins.push(kid);
+        }
+      }
+    }
+    return cousins;
+  };
+
+  const parentCousins = [...getParentFirstCousins(father), ...getParentFirstCousins(mother)];
+  for (const pc of parentCousins) {
+    if (pc.id === target.id) {
+      // Target is parent's cousin
+      return { hindiLabel: target.gender === "female" ? "Cousin Aunt" : "Cousin Uncle", englishLabel: "Parent's Cousin", path: "Parent's cousin", category: "extended", emoji: target.gender === "female" ? "👩" : "👨" } as RelationshipResult;
+    }
+    const kids = getChildren(pc.id, all);
+    const sp = getMember(pc.spouse_id, all);
+    if (sp) for (const c of getChildren(sp.id, all)) { if (!kids.find(k => k.id === c.id)) kids.push(c); }
+    for (const sc of kids) {
+      if (sc.id === target.id) {
+        return { hindiLabel: target.gender === "female" ? "Second Cousin (Sister)" : "Second Cousin (Brother)", englishLabel: "Second Cousin", path: "Parent's cousin's child", category: "cousin", emoji: target.gender === "female" ? "👧" : "👦" } as RelationshipResult;
+      }
+    }
+  }
+
+  // Children of First Cousins (First Cousin Once Removed)
+  const getMyFirstCousins = (): FamilyMember[] => {
+    const cousins: FamilyMember[] = [];
+    for (const p of [father, mother].filter(Boolean) as FamilyMember[]) {
+      for (const sib of getSiblings(p, all)) {
+        for (const kid of getChildren(sib.id, all)) {
+          if (!cousins.find(c => c.id === kid.id)) cousins.push(kid);
+        }
+      }
+    }
+    return cousins;
+  };
+  for (const myCousin of getMyFirstCousins()) {
+    const kids = getChildren(myCousin.id, all);
+    const sp = getMember(myCousin.spouse_id, all);
+    if (sp) for (const c of getChildren(sp.id, all)) { if (!kids.find(k => k.id === c.id)) kids.push(c); }
+    for (const cfc of kids) {
+      if (cfc.id === target.id) {
+        return { hindiLabel: target.gender === "female" ? "Cousin Niece" : "Cousin Nephew", englishLabel: "Cousin's Child", path: "Cousin's child", category: "extended", emoji: target.gender === "female" ? "👧" : "👦" } as RelationshipResult;
+      }
+    }
+  }
 
   // Nephews / Nieces
   for (const sib of getSiblings(self, all)) {
