@@ -60,6 +60,24 @@ export function FamilyTreeCanvas() {
       const newEdges: Edge[] = [];
 
       members?.forEach((member: FamilyMember) => {
+        let fatherId = member.father_id;
+        let motherId = member.mother_id;
+
+        // Auto-infer missing parent from spouse if available
+        if (fatherId && !motherId) {
+          const father = members.find(m => m.id === fatherId);
+          if (father?.spouse_id) {
+            const spouse = members.find(m => m.id === father.spouse_id);
+            if (spouse && spouse.gender === 'female') motherId = spouse.id;
+          }
+        } else if (motherId && !fatherId) {
+          const mother = members.find(m => m.id === motherId);
+          if (mother?.spouse_id) {
+            const spouse = members.find(m => m.id === mother.spouse_id);
+            if (spouse && spouse.gender === 'male') fatherId = spouse.id;
+          }
+        }
+
         newNodes.push({
           id: member.id,
           type: 'familyNode',
@@ -74,24 +92,24 @@ export function FamilyTreeCanvas() {
             city: member.city,
             bio: member.bio,
             gender: member.gender,
-            fatherId: member.father_id,
-            motherId: member.mother_id,
+            fatherId: fatherId,
+            motherId: motherId,
             spouseId: member.spouse_id,
           }
         });
 
-        if (member.father_id) {
+        if (fatherId) {
           newEdges.push({
-            id: `e-father-${member.father_id}-${member.id}`,
-            source: member.father_id, target: member.id,
+            id: `e-father-${fatherId}-${member.id}`,
+            source: fatherId, target: member.id,
             animated: true,
             style: { stroke: '#9CB4A6', strokeWidth: 2 }
           });
         }
-        if (member.mother_id) {
+        if (motherId) {
           newEdges.push({
-            id: `e-mother-${member.mother_id}-${member.id}`,
-            source: member.mother_id, target: member.id,
+            id: `e-mother-${motherId}-${member.id}`,
+            source: motherId, target: member.id,
             animated: true,
             style: { stroke: '#FFDAB9', strokeWidth: 2 }
           });

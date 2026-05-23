@@ -160,17 +160,51 @@ export function AddMemberModal({ isOpen, onClose, onSuccess, relativeToId, relat
       if (editMemberData) {
         const { error } = await supabase.from("family_members").update(payload).eq("id", editMemberData.id);
         if (error) throw error;
+        
+        if (payload.spouse_id && payload.spouse_id !== editMemberData.spouseId) {
+          await supabase.from("family_members").update({ spouse_id: editMemberData.id }).eq("id", payload.spouse_id);
+          const spouseData = existingMembers.find(m => m.id === payload.spouse_id);
+          if (spouseData) {
+            const selfIsMale = formData.gender === 'male';
+            const spouseIsFemale = spouseData.gender === 'female';
+            if (selfIsMale && spouseIsFemale) {
+              await supabase.from("family_members").update({ mother_id: spouseData.id }).eq("father_id", editMemberData.id).is("mother_id", null);
+              await supabase.from("family_members").update({ father_id: editMemberData.id }).eq("mother_id", spouseData.id).is("father_id", null);
+            } else if (!selfIsMale && !spouseIsFemale) {
+              await supabase.from("family_members").update({ father_id: spouseData.id }).eq("mother_id", editMemberData.id).is("father_id", null);
+              await supabase.from("family_members").update({ mother_id: editMemberData.id }).eq("father_id", spouseData.id).is("mother_id", null);
+            }
+          }
+        }
+
         addToast("success", `${formData.first_name} updated successfully!`);
       } else {
         const { data: newMember, error } = await supabase.from("family_members").insert([payload]).select().single();
         if (error) throw error;
+        
+        if (payload.spouse_id && newMember) {
+          await supabase.from("family_members").update({ spouse_id: newMember.id }).eq("id", payload.spouse_id);
+          const spouseData = existingMembers.find(m => m.id === payload.spouse_id);
+          if (spouseData) {
+            const selfIsMale = formData.gender === 'male';
+            const spouseIsFemale = spouseData.gender === 'female';
+            if (selfIsMale && spouseIsFemale) {
+              await supabase.from("family_members").update({ mother_id: spouseData.id }).eq("father_id", newMember.id).is("mother_id", null);
+              await supabase.from("family_members").update({ father_id: newMember.id }).eq("mother_id", spouseData.id).is("father_id", null);
+            } else if (!selfIsMale && !spouseIsFemale) {
+              await supabase.from("family_members").update({ father_id: spouseData.id }).eq("mother_id", newMember.id).is("father_id", null);
+              await supabase.from("family_members").update({ mother_id: newMember.id }).eq("father_id", spouseData.id).is("mother_id", null);
+            }
+          }
+        }
+
         if (relativeToId && relationType === "parent" && newMember) {
           const updatePayload: Record<string, unknown> = {};
           if (payload.gender === 'female') updatePayload.mother_id = newMember.id;
           else updatePayload.father_id = newMember.id;
           await supabase.from("family_members").update(updatePayload).eq("id", relativeToId);
         }
-        if (relativeToId && relationType === "spouse" && newMember) {
+        if (relativeToId && relationType === "spouse" && newMember && !payload.spouse_id) {
           await supabase.from("family_members").update({ spouse_id: newMember.id }).eq("id", relativeToId);
         }
         addToast("success", `${formData.first_name} added to the family tree!`);
